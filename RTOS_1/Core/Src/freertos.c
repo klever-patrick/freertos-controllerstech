@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,7 +45,12 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+osThreadId_t Task3Handle;
+const osThreadAttr_t Task3_attributes = {
+  .name = "Task3",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityBelowNormal,
+};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -59,12 +64,15 @@ osThreadId_t Task2Handle;
 const osThreadAttr_t Task2_attributes = {
   .name = "Task2",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityAboveNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+void Task3_init(void *argument);
+void send_from_default_task();
+void send_from_task_2();
+void send_from_task_3();
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -107,6 +115,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  Task3Handle = osThreadNew(Task3_init, NULL, &Task3_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -128,7 +137,9 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+    send_from_default_task();
+    osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -146,13 +157,40 @@ void Task2_init(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
+    send_from_task_2();
+    osDelay(1000);
   }
   /* USER CODE END Task2_init */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void Task3_init(void *argument)
+{
+  while (1)
+  {
+    send_from_task_3();
+    osDelay(1000);
+  }
+}
 
+void send_from_default_task()
+{
+  uint8_t data[] = "Hello from default task\n";
+  HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
+}
+
+void send_from_task_2()
+{
+  uint8_t data[] = "Hello from task 2\n";
+  HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
+}
+
+void send_from_task_3()
+{
+  uint8_t data[] = "Hello from task 3\n";
+  HAL_UART_Transmit(&huart2, data, sizeof(data), 500);
+}
 /* USER CODE END Application */
 
