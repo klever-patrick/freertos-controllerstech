@@ -5,3 +5,5 @@ STM32-for-VSCode.config.yaml
 STM32Make.make
 
 .vscode/
+
+openocd.cfg
